@@ -129,22 +129,26 @@ public class RNAdMobInterstitialAdModule extends ReactContextBaseJavaModule {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run () {
-                if (mInterstitialAd.isLoaded() || mInterstitialAd.isLoading()) {
-                    promise.reject("E_AD_ALREADY_LOADED", "Ad is already loaded.");
-                } else {
-                    mRequestAdPromise = promise;
-                    AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
-                    if (testDevices != null) {
-                        for (int i = 0; i < testDevices.length; i++) {
-                            String testDevice = testDevices[i];
-                            if (testDevice == "SIMULATOR") {
-                                testDevice = AdRequest.DEVICE_ID_EMULATOR;
+                try {
+                    if (mInterstitialAd.isLoaded() || mInterstitialAd.isLoading()) {
+                        promise.reject("E_AD_ALREADY_LOADED", "Ad is already loaded.");
+                    } else {
+                        mRequestAdPromise = promise;
+                        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+                        if (testDevices != null) {
+                            for (int i = 0; i < testDevices.length; i++) {
+                                String testDevice = testDevices[i];
+                                if (testDevice == "SIMULATOR") {
+                                    testDevice = AdRequest.DEVICE_ID_EMULATOR;
+                                }
+                                adRequestBuilder.addTestDevice(testDevice);
                             }
-                            adRequestBuilder.addTestDevice(testDevice);
                         }
+                        AdRequest adRequest = adRequestBuilder.build();
+                        mInterstitialAd.loadAd(adRequest);
                     }
-                    AdRequest adRequest = adRequestBuilder.build();
-                    mInterstitialAd.loadAd(adRequest);
+                } catch(Exception ex) {
+                    promise.reject("RNAdMobInterstitialAdModule::requestAd() failed", ex.getMessage());
                 }
             }
         });
